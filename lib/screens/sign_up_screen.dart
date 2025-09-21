@@ -46,7 +46,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (_role == "admin") {
         if (mounted) Navigator.pushReplacementNamed(context, "/admin");
       } else {
-        if (mounted) Navigator.pushNamed(context, "/employee");
+        if (mounted) Navigator.pushReplacementNamed(context, "/employee");
       }
 
 
@@ -106,8 +106,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           prefixIcon: Icon(Icons.email),
                           border: OutlineInputBorder(),
                         ),
-                        validator: (val) =>
-                        val == null || val.isEmpty ? "Enter email" : null,
+                        // validator: (val) =>
+                        // val == null || val.isEmpty ? "Enter email" : null,
+                        validator: (val) {
+                          if (val == null || val.isEmpty) {
+                            return "Enter email";
+                          }
+                          final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                          if (!emailRegex.hasMatch(val)) {
+                            return "Enter a valid email";
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 12),
                       TextFormField(

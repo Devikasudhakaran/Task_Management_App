@@ -27,11 +27,25 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (_) => AuthBloc()),
         BlocProvider(create: (_) => TasksBloc(repo: TaskRepository())),
-        
       ],
       child: MaterialApp(
         title: 'Task Manager',
-        theme: ThemeData(primarySwatch: Colors.indigo),
+        // theme: ThemeData(primarySwatch: Colors.indigo),
+        theme: ThemeData(
+          primarySwatch: Colors.indigo,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.indigo,
+            foregroundColor: Colors.white,
+            titleTextStyle: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+            iconTheme: IconThemeData(
+              color: Colors.white,
+            ),
+          ),
+        ),
         home: const SignUpScreen(),
         routes: {
           '/login': (_) => const LoginScreen(),

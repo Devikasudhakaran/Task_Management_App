@@ -13,5 +13,6 @@ class TasksLoaded extends TasksState {
 }
 class TasksError extends TasksState {
   final String message;
-  TasksError({required this.message});
+  final String stackTrace;
+  TasksError({required this.message,required this. stackTrace});
 }

@@ -19,33 +19,17 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  // Future<void> checkUserRole(User user) async {
-  //   DocumentSnapshot doc =
-  //   await FirebaseFirestore.instance.collection("users").doc(user.uid).get();
-  //
-  //   String role = doc["role"];
-  //
-  //   if (role == "admin") {
-  //     Navigator.pushReplacementNamed(context, "/admin");
-  //   } else {
-  //     Navigator.pushReplacementNamed(context, "/employee");
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
+    return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state is AuthLoading) {
-          // return  Center(child: CircularProgressIndicator());
-        }
-
         if (state is Authenticated) {
           log("User authenticated: email=${state.email}, role=${state.role}");
           if (state.role == "admin") {
             Navigator.pushReplacementNamed(context, "/admin");
           } else {
-            Navigator.pushNamed(context, "/employee");
+            Navigator.pushReplacementNamed(context, "/employee");
           }
         }
 
@@ -55,133 +39,136 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       },
-      child: Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.indigo, Colors.purple],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+      builder: (context, state) {
+        if (state is AuthLoading) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
             ),
-          ),
-          child: Center(
-            child: Card(
-              elevation: 10,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+          );
+        }
+
+        return Scaffold(
+          body: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.indigo, Colors.purple],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              margin: const EdgeInsets.all(20),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.task_alt,
-                          size: 60, color: Colors.indigo),
-                      const SizedBox(height: 16),
-                      const Text(
-                        "Task Manager Login",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.indigo,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      // TextField(
-                      //   controller: _emailCtrl,
-                      //   decoration: const InputDecoration(
-                      //     labelText: "Email",
-                      //     prefixIcon: Icon(Icons.email),
-                      //     border: OutlineInputBorder(),
-                      //   ),
-                      // ),
-                      TextFormField(
-                        controller: _emailCtrl,
-                        decoration: const InputDecoration(
-                          labelText: "Email",
-                          prefixIcon: Icon(Icons.email),
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (val) =>
-                            val == null || val.isEmpty ? "Enter Valid Email" : null,
-                      ),
-                      const SizedBox(height: 12),
-                      // TextField(
-                      //   controller: _passwordCtrl,
-                      //   obscureText: true,
-                      //   decoration: const InputDecoration(
-                      //     labelText: "Password",
-                      //     prefixIcon: Icon(Icons.lock),
-                      //     border: OutlineInputBorder(),
-                      //   ),
-                      // ),
-                      TextFormField(
-                        controller: _passwordCtrl,
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: "Password",
-                          prefixIcon: Icon(Icons.lock),
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (val) => val != null && val.length < 6
-                            ? "Enter Valid Password"
-                            : null,
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 12),
-                          backgroundColor: Colors.indigo,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Card(
+                elevation: 10,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                margin: const EdgeInsets.all(20),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: SingleChildScrollView(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.task_alt,
+                              size: 60, color: Colors.indigo),
+                          const SizedBox(height: 16),
+                          const Text(
+                            "Task Manager Login",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.indigo,
+                            ),
                           ),
-                        ),
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            context.read<AuthBloc>().add(
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: _emailCtrl,
+                            decoration: const InputDecoration(
+                              labelText: "Email",
+                              prefixIcon: Icon(Icons.email),
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (val) {
+                              if (val == null || val.isEmpty) {
+                                return "Enter email";
+                              }
+                              final emailRegex =
+                              RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                              if (!emailRegex.hasMatch(val)) {
+                                return "Enter a valid email";
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _passwordCtrl,
+                            obscureText: true,
+                            decoration: const InputDecoration(
+                              labelText: "Password",
+                              prefixIcon: Icon(Icons.lock),
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (val) => val != null && val.length < 6
+                                ? "Enter Valid Password"
+                                : null,
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 40, vertical: 12),
+                              backgroundColor: Colors.indigo,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                context.read<AuthBloc>().add(
                                   LoginRequested(
                                     email: _emailCtrl.text.trim(),
                                     password: _passwordCtrl.text.trim(),
                                   ),
                                 );
-                          }
-                        },
-                        child: const Text("Login",
-                            style:
-                                TextStyle(fontSize: 18, color: Colors.white)),
-                      ),
-                      const SizedBox(height: 9),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text("Don't have an account? ",
-                              style: TextStyle(
-                                color: Colors.black,
-                              )),
-                          InkWell(
-                            onTap: () {
-                              Navigator.pop(context);
+                              }
                             },
-                            child: Text('Sign Up',
-                                style: TextStyle(
-                                    color: Colors.indigo,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold)),
+                            child: const Text("Login",
+                                style:
+                                TextStyle(fontSize: 18, color: Colors.white)),
+                          ),
+                          const SizedBox(height: 9),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text("Don't have an account? ",
+                                  style: TextStyle(color: Colors.black)),
+                              InkWell(
+                                onTap: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('Sign Up',
+                                    style: TextStyle(
+                                        color: Colors.indigo,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold)),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
+
 }

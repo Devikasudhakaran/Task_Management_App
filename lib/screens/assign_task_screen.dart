@@ -43,8 +43,6 @@ class _AssignTaskScreenState extends State<AssignTaskScreen> {
 
     setState(() => _employees = employees);
   }
-
-
   Future<void> _saveTask() async {
     if (_selectedEmployee == null ||
         _titleCtrl.text.isEmpty ||
@@ -59,7 +57,8 @@ class _AssignTaskScreenState extends State<AssignTaskScreen> {
       id: null,
       assignedToUid: _selectedEmployee!,
       assignedToName: _employees
-        .firstWhere((e) => e['uid'] == _selectedEmployee)['name'].toString(),
+          .firstWhere((e) => e['uid'] == _selectedEmployee)['name']
+          .toString(),
       title: _titleCtrl.text,
       description: _descCtrl.text,
       start: Timestamp.fromDate(_start!),
@@ -68,24 +67,20 @@ class _AssignTaskScreenState extends State<AssignTaskScreen> {
 
     await FirebaseFirestore.instance.collection('tasks').add(task.toMap());
 
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Task assigned successfully')));
 
-    setState(() {
-      _selectedEmployee = null;
-      _titleCtrl.clear();
-      _descCtrl.clear();
-      _start = null;
-      _end = null;
-    });
+
+    Navigator.pushNamedAndRemoveUntil(context, "/admin", (route) => false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Assign Task", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.indigo,
+        title: const Text("Assign Task"),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),

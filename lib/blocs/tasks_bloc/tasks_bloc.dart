@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../models/task_model.dart';
@@ -13,10 +15,24 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
   TasksBloc({required this.repo}) : super(TasksInitial()) {
     on<LoadTasksForUser>((event, emit) async {
       emit(TasksLoading());
-      _streamSub = repo.tasksForUserStream(event.uid);
-      await emit.forEach<List<TaskModel>>(_streamSub!,
+
+      try {
+        _streamSub = repo.tasksForUserStream(event.uid);
+
+        await emit.forEach<List<TaskModel>>(
+          _streamSub!,
           onData: (tasks) => TasksLoaded(tasks: tasks),
-          onError: (_, __) => TasksError(message: 'Failed to load tasks'));
+          onError: (error, stackTrace) {
+            return TasksError(
+              message: error.toString(),
+              stackTrace: stackTrace.toString(),
+            );
+          },
+        );
+      } catch (e, st) {
+        emit(TasksError(message: e.toString(), stackTrace: st.toString()));
+        log(e.toString());
+      }
     });
   }
 }

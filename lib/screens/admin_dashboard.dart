@@ -1,5 +1,6 @@
 
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/material.dart';
@@ -22,6 +23,31 @@ class _AdminDashboardState extends State<AdminDashboard> {
     _fetchEmployees();
   }
 
+  Future<void> _logout(BuildContext context) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Logout"),
+        content: const Text("Are you sure you want to logout?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Cancel",style: TextStyle(color: Colors.black),),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("OK",style: TextStyle(color: Colors.black),),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      await FirebaseAuth.instance.signOut();
+      Navigator.pushReplacementNamed(context, "/login");
+    }
+  }
   Future<void> _fetchEmployees() async {
     final snapshot = await FirebaseFirestore.instance.collection('users').get();
     final map = {
@@ -42,8 +68,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Admin Dashboard", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.indigo,
+        automaticallyImplyLeading: false,
+        title: const Text("Admin Dashboard",),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, ),
+            onPressed: () => _logout(context),
+          ),
+        ],
       ),
       body: Column(
         children: [
